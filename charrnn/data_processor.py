@@ -87,7 +87,7 @@ class LocalDataProcessor(object):
         self.vocab_to_idx = {v: k for k, v in self.idx_to_vocab.items()}
 
         # corpus-dependent information
-        self.num_batches = len(self.corpus) // self.configs.batch_size
+        self.num_batches = len(raw_text) // self.configs.batch_size
 
         # get encoded corpus
         if not os.path.exists(self.encoded_filename):
