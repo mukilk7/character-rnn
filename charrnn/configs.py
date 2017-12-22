@@ -13,7 +13,7 @@ class ModelParams(object):
     """
     def __init__(self, batch_size=30, num_steps=200, data_steps_ahead=1, model_state_size=100,
                  model_learning_rate=1e-3, model_drop_out_rate=0.5, model_type="gru",
-                 model_num_layers=3):
+                 model_num_layers=3, embed_sz=5):
         """
         params:
             batch_size: the size of a batch (sequence length)
@@ -22,8 +22,9 @@ class ModelParams(object):
             model_state_size: the number of hidden layer neurons
             model_learning_rate: use low values to prevent hitting local minima
             model_drop_out_rate: rate of updating only some neurons to prevent overfitting
-            model_type
-            model_num_layers
+            model_type: the rnn model architecture (basic, lstm or gru)
+            model_num_layers: number of rnn layers
+            embed_sz: character input embedding size
         """
         # settings
         self.batch_size = batch_size
@@ -34,6 +35,7 @@ class ModelParams(object):
         self.model_drop_out_rate = model_drop_out_rate # 0.0 - 1.0
         self.model_type = model_type # options: "basic", "lstm", "gru" <- simplified version of "lstm"
         self.model_num_layers = model_num_layers
+        self.embed_sz = embed_sz
 
         #logger
         self.logger = logging.getLogger(DEFAULT_LOGGER)
@@ -47,7 +49,8 @@ class ModelParams(object):
              "model_learning_rate": self.model_learning_rate,
              "model_drop_out_rate": self.model_drop_out_rate,
              "model_type": self.model_type,
-             "model_num_layers": self.model_num_layers
+             "model_num_layers": self.model_num_layers,
+             "embed_sz": self.embed_sz
         }
 
         #Dump parameters currently being used

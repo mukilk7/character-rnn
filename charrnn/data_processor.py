@@ -54,8 +54,6 @@ class LocalDataProcessor(object):
         # data loader
         self.prepare_corpus()
 
-        # corpus-dependent information
-        self.num_batches = len(self.corpus) // self.configs.batch_size
 
     def prepare_corpus(self, sep="[]"):
         """
@@ -88,10 +86,17 @@ class LocalDataProcessor(object):
         self.idx_to_vocab = dict(enumerate(vocab))
         self.vocab_to_idx = {v: k for k, v in self.idx_to_vocab.items()}
 
+        # corpus-dependent information
+        self.num_batches = len(self.corpus) // self.configs.batch_size
+
         # get encoded corpus
         if not os.path.exists(self.encoded_filename):
             self.logger.debug("constructing numerically encoded corpus")
-            self.corpus = [min(self.vocab_to_idx[c], self.num_classes - 1) for c in raw_text]
+            self.corpus = np.empty(self.num_batches * self.configs.batch_size)
+            for i, c in enumerate(raw_text):
+                if i >= self.num_batches * self.configs.batch_size:
+                    break
+                self.corpus[i] = min(self.vocab_to_idx[c], self.num_classes - 1)
             with open(self.encoded_filename, "wb") as f:
                 pickle.dump(self.corpus, f)
         else:
@@ -102,9 +107,6 @@ class LocalDataProcessor(object):
         del raw_text
         return
 
-    def gen_y_by_rolling(self):
-        return np.roll(self.corpus, -1*self.configs.data_steps_ahead)
-
     def gen_epoch_batch_data(self):
         """ Generates batches of input data for a single epoch.
 
@@ -113,21 +115,13 @@ class LocalDataProcessor(object):
         """
         # TODO: Investigate batch shuffling based on tensorflow's backprop implementation
         # i.e., stateless vs stateful RNN.
-        stacked_data = np.asarray(self.corpus[:self.num_batches * self.configs.batch_size])
-        stacked_x = stacked_data.reshape((self.configs.batch_size, -1))
+        stacked_x = self.corpus.reshape((self.configs.batch_size, -1))
         num_batches_per_epoch = (self.num_batches - 1) // self.configs.num_steps
         for i in range(num_batches_per_epoch):
             batchx = stacked_x[:, i * self.configs.num_steps: (i + 1) * self.configs.num_steps]
             batchy = stacked_x[:, i * self.configs.num_steps + self.configs.data_steps_ahead:
                                         (i + 1) * self.configs.num_steps + self.configs.data_steps_ahead]
             yield (batchx, batchy)
-        #send the last epoch batch -- mukil -- disabling this as this may not fit right dims.
-        # we will lose the last batch of data though. This should be ok, I think.
-        #if num_batches_per_epoch * num_steps < num_batches - steps_ahead:
-        #    batchx = stacked_data[:, num_batches_per_epoch * num_steps: num_batches - steps_ahead] 
-        #    batchy = stacked_data[:, num_batches_per_epoch * num_steps + steps_ahead:] 
-        #    yield (batchx, batchy)
-
 
     def gen_epoch_data(self, num_epochs):
         """
