@@ -55,7 +55,7 @@ class LocalDataProcessor(object):
         self.prepare_corpus()
 
 
-    def prepare_corpus(self, sep="[]"):
+    def prepare_corpus(self):
         """
         Download and encode the corpus if not already on disk.
 
