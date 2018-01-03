@@ -6,7 +6,7 @@ This project builds a Character Recurrent Neural Network in Python3 using Tensor
 
 Applications:
 
-Case 1: Can be used to generate new poems, essays, source code etc. depending on the training set
+Case 1: Can be used to generate new poems, essays, source code etc. depending on the training set  
 Case 2: Can be used to detect "fakes" that are similar in style to the training set on cursory glance
 
 To run the project, execute main.py from a unix-style command line shell and follow the help section.
